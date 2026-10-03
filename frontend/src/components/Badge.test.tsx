@@ -5,11 +5,14 @@ import {
   AlertStatusBadge,
   Badge,
   ChannelBadge,
+  ExceptionStatusBadge,
   InventoryStatusBadge,
   OrderStatusBadge,
   ReconciliationStatusBadge,
   SeverityBadge,
+  SyncStatusBadge,
 } from './Badge'
+
 
 describe('Badge Components', () => {
   describe('Badge', () => {
@@ -127,4 +130,37 @@ describe('Badge Components', () => {
       expect(screen.getByText('Out of Stock')).toBeInTheDocument()
     })
   })
+
+  describe('ExceptionStatusBadge', () => {
+    it('renders known exception status labels', () => {
+      const { rerender } = render(<ExceptionStatusBadge status="open" />)
+      expect(screen.getByText('OPEN')).toBeInTheDocument()
+
+      rerender(<ExceptionStatusBadge status="investigating" />)
+      expect(screen.getByText('INVESTIGATING')).toBeInTheDocument()
+
+      rerender(<ExceptionStatusBadge status="resolved" />)
+      expect(screen.getByText('RESOLVED')).toBeInTheDocument()
+
+      rerender(<ExceptionStatusBadge status="ignored" />)
+      expect(screen.getByText('IGNORED')).toBeInTheDocument()
+    })
+  })
+
+  describe('SyncStatusBadge', () => {
+    it('renders known sync status labels', () => {
+      const { rerender } = render(<SyncStatusBadge status="success" />)
+      expect(screen.getByText('SUCCESS')).toBeInTheDocument()
+
+      rerender(<SyncStatusBadge status="running" />)
+      expect(screen.getByText('RUNNING')).toBeInTheDocument()
+
+      rerender(<SyncStatusBadge status="partial_failure" />)
+      expect(screen.getByText('PARTIAL')).toBeInTheDocument()
+
+      rerender(<SyncStatusBadge status="failed" />)
+      expect(screen.getByText('FAILED')).toBeInTheDocument()
+    })
+  })
 })
+

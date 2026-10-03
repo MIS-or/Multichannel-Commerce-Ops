@@ -106,3 +106,29 @@ export function InventoryStatusBadge({ status }: { status: string }) {
   const item = map[norm] ?? { variant: "neutral", label: status }
   return <Badge variant={item.variant} size="sm">{item.label}</Badge>
 }
+
+export function ExceptionStatusBadge({ status }: { status: string }) {
+  const norm = status.toLowerCase()
+  const map: Record<string, { variant: BadgeVariant; label: string }> = {
+    open: { variant: "critical", label: "OPEN" },
+    investigating: { variant: "warning", label: "INVESTIGATING" },
+    resolved: { variant: "success", label: "RESOLVED" },
+    ignored: { variant: "neutral", label: "IGNORED" },
+  }
+  const item = map[norm] ?? { variant: "neutral", label: status.toUpperCase() }
+  return <Badge variant={item.variant} size="sm">{item.label}</Badge>
+}
+
+export function SyncStatusBadge({ status }: { status: string }) {
+  const norm = status.toLowerCase()
+  const map: Record<string, { variant: BadgeVariant; label: string }> = {
+    success: { variant: "success", label: "SUCCESS" },
+    running: { variant: "info", label: "RUNNING" },
+    partial: { variant: "warning", label: "PARTIAL" },
+    partial_failure: { variant: "warning", label: "PARTIAL" },
+    failed: { variant: "critical", label: "FAILED" },
+  }
+  const item = map[norm] ?? { variant: "neutral", label: status.toUpperCase() }
+  return <Badge variant={item.variant} size="sm">{item.label}</Badge>
+}
+
