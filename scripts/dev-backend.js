@@ -20,6 +20,34 @@ const child = spawn(pythonCmd, ['-m', 'uvicorn', 'app.main:app', '--reload', '--
   shell: false,
 })
 
+const killChild = () => {
+  if (child && child.pid) {
+    if (isWin) {
+      try {
+        spawn('taskkill', ['/pid', child.pid.toString(), '/f', '/t'])
+      } catch {
+        // ignore if already exited
+      }
+    } else {
+      child.kill('SIGTERM')
+    }
+  }
+}
+
+process.on('SIGINT', () => {
+  killChild()
+  process.exit(0)
+})
+
+process.on('SIGTERM', () => {
+  killChild()
+  process.exit(0)
+})
+
+process.on('exit', () => {
+  killChild()
+})
+
 child.on('error', (err) => {
   console.error('[backend] Failed to start uvicorn:', err)
 })
