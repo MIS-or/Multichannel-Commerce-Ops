@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import {
-  CircleDollarSign,
-  Receipt,
-  TrendingUp,
-  ShoppingCart,
   ChevronRight,
   RefreshCw,
+  ArrowRight,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -18,14 +15,13 @@ import { ErrorState } from '../components/ErrorState'
 import { ApiError } from '../lib/api'
 import { ChannelProfitChart } from '../features/dashboard/ChannelProfitChart'
 import { ChannelRevenueChart } from '../features/dashboard/ChannelRevenueChart'
-import { useDailyReport } from '../features/dashboard/api'
+import { useDailyReport, useOperationsHealth } from '../features/dashboard/api'
 import { useInventory } from '../features/inventory/api'
 import { useAlerts } from '../features/alerts/api'
 import { useReconciliations } from '../features/reconciliation/api'
 import { formatVND, formatDateTime } from '../utils'
 
 function getInventoryStatus(current: number, threshold: number): 'out' | 'low' | 'healthy' {
-
   if (current === 0) return 'out'
   if (current <= threshold) return 'low'
   return 'healthy'
@@ -36,6 +32,7 @@ export function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState<string>('')
 
   const reportQuery = useDailyReport(selectedDate || undefined)
+  const healthQuery = useOperationsHealth()
   const inventoryQuery = useInventory()
   const alertsQuery = useAlerts(false)
   const reconciliationsQuery = useReconciliations()
@@ -46,6 +43,7 @@ export function DashboardPage() {
   const handleRefresh = async () => {
     await Promise.all([
       reportQuery.refetch(),
+      healthQuery.refetch(),
       inventoryQuery.refetch(),
       alertsQuery.refetch(),
       reconciliationsQuery.refetch(),
@@ -82,6 +80,11 @@ export function DashboardPage() {
   const orders = report?.totals.orders ?? 0
   const margin = revenue > 0 ? ((grossProfit / revenue) * 100).toFixed(1) : '0.0'
 
+  const health = healthQuery.data
+  const isActionRequired = health
+    ? health.critical_exceptions > 0 || health.failed_syncs_24h > 0 || health.critical_alerts > 0
+    : false
+
   return (
     <div className="p-6 max-w-[1440px] w-full">
       <PageHeader
@@ -102,16 +105,126 @@ export function DashboardPage() {
               onClick={() => {
                 void handleRefresh()
               }}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 cursor-pointer"
               aria-label="Refresh data"
               title="Refresh data"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${reportQuery.isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${reportQuery.isFetching || healthQuery.isFetching ? 'animate-spin' : ''}`} />
             </button>
           </div>
         }
       />
 
+      {/* Operations Health Cockpit */}
+      <div className="mb-6 bg-white border border-border rounded-xl p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-3">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${healthQuery.isLoading ? 'bg-gray-400' : isActionRequired ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500 animate-pulse'}`} />
+              <h2 className="text-sm font-bold text-gray-900 tracking-tight">Operations &amp; Multi-System Telemetry</h2>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${healthQuery.isLoading ? 'bg-gray-100 text-gray-600 border-gray-200' : isActionRequired ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                {healthQuery.isLoading ? 'Đang đồng bộ…' : isActionRequired ? 'Cần xử lý' : 'Đồng bộ tốt'}
+              </span>
+            </div>
+            <p className="text-xs text-text-secondary">Trạng thái vận hành thời gian thực — connector đa sàn, lệch tồn kho ERP, đối soát payout và hàng chờ ngoại lệ.</p>
+          </div>
+          <div className="text-[11px] text-text-muted font-mono">Tự động cập nhật mỗi 30 giây</div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+          {/* Connector Health */}
+          <button
+            onClick={() => {
+              void navigate('/integrations')
+            }}
+            className="group text-left bg-gray-50/60 hover:bg-white border border-border hover:border-gray-300 rounded-lg p-3.5 transition-all cursor-pointer shadow-none hover:shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-semibold text-gray-500 text-[10px] uppercase tracking-wider">Connectors &amp; Sync</span>
+              <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <div className="text-xl font-bold font-mono text-gray-900 mb-1">
+              {health?.healthy_integrations ?? 0}/{health?.total_integrations ?? 0}{' '}
+              <span className="text-xs font-sans font-medium text-emerald-600">online</span>
+            </div>
+            <div className="text-xs">
+              {health && health.failed_syncs_24h > 0 ? (
+                <span className="text-rose-600 font-medium">
+                  {health.failed_syncs_24h} lần đồng bộ lỗi (24h qua)
+                </span>
+              ) : (
+                <span className="text-text-secondary">Tất cả pipeline chạy ổn định</span>
+              )}
+            </div>
+          </button>
+
+          {/* Operational Exceptions */}
+          <button
+            onClick={() => {
+              void navigate('/exceptions')
+            }}
+            className="group text-left bg-gray-50/60 hover:bg-white border border-border hover:border-gray-300 rounded-lg p-3.5 transition-all cursor-pointer shadow-none hover:shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-semibold text-gray-500 text-[10px] uppercase tracking-wider">Ngoại lệ đang mở</span>
+              <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <div className="text-xl font-bold font-mono text-gray-900 mb-1">
+              {health?.open_exceptions ?? 0}{' '}
+              <span className="text-xs font-sans font-normal text-text-muted">mục chưa xử lý</span>
+            </div>
+            <div className="text-xs">
+              {health && health.critical_exceptions > 0 ? (
+                <span className="text-rose-600 font-medium">
+                  {health.critical_exceptions} mục nghiêm trọng — cần xử lý ngay
+                </span>
+              ) : (
+                <span className="text-text-secondary">0 mục nghiêm trọng đang chờ</span>
+              )}
+            </div>
+          </button>
+
+          {/* Inventory Alignment */}
+          <button
+            onClick={() => {
+              void navigate('/inventory')
+            }}
+            className="group text-left bg-gray-50/60 hover:bg-white border border-border hover:border-gray-300 rounded-lg p-3.5 transition-all cursor-pointer shadow-none hover:shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-semibold text-gray-500 text-[10px] uppercase tracking-wider">Lệch tồn kho</span>
+              <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <div className="text-xl font-bold font-mono text-gray-900 mb-1">
+              {health?.inventory_mismatches ?? 0}{' '}
+              <span className="text-xs font-sans font-normal text-text-muted">SKU có sai lệch</span>
+            </div>
+            <div className="text-xs text-text-secondary truncate">
+              ERP nguồn thực vs snapshot từng kênh
+            </div>
+          </button>
+
+          {/* Settlement Discrepancy */}
+          <button
+            onClick={() => {
+              void navigate('/reconciliation')
+            }}
+            className="group text-left bg-gray-50/60 hover:bg-white border border-border hover:border-gray-300 rounded-lg p-3.5 transition-all cursor-pointer shadow-none hover:shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-semibold text-gray-500 text-[10px] uppercase tracking-wider">Đối soát thanh toán</span>
+              <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <div className="text-xl font-bold font-mono text-gray-900 mb-1">
+              {health?.settlement_mismatches ?? 0}{' '}
+              <span className="text-xs font-sans font-normal text-text-muted">lần lệch payout</span>
+            </div>
+            <div className="text-xs text-text-secondary truncate">
+              {health?.pending_reconciliations ?? 0} phiên đối soát đang chờ kiểm tra
+            </div>
+          </button>
+        </div>
+      </div>
 
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -120,28 +233,30 @@ export function DashboardPage() {
         ) : (
           <>
             <MetricCard
-              icon={CircleDollarSign}
-              label="Revenue"
+              label="Doanh thu"
               value={formatVND(revenue, true)}
+              description="Tổng tiền khách hàng thanh toán trên tất cả kênh bán"
               subValue={formatVND(revenue)}
+              accent="info"
             />
             <MetricCard
-              icon={Receipt}
-              label="COGS"
+              label="Giá vốn hàng bán (COGS)"
               value={formatVND(cogs, true)}
+              description="Chi phí nhập hàng tương ứng với các đơn đã bán"
               subValue={formatVND(cogs)}
+              accent="warning"
             />
             <MetricCard
-              icon={TrendingUp}
-              label="Gross Profit"
+              label="Lợi nhuận gộp"
               value={formatVND(grossProfit, true)}
-              subValue={`${margin}% margin`}
+              description={`Biên lợi nhuận gộp: ${margin}% — Doanh thu trừ đi giá vốn`}
+              accent={Number(margin) >= 20 ? 'success' : Number(margin) >= 10 ? 'warning' : 'danger'}
             />
             <MetricCard
-              icon={ShoppingCart}
-              label="Orders"
+              label="Số đơn hàng"
               value={orders.toString()}
-              subValue="across all channels"
+              description="Tổng đơn đã ghi nhận trên tất cả kênh trong ngày"
+              accent="default"
             />
           </>
         )}

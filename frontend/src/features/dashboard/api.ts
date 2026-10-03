@@ -35,3 +35,27 @@ export function useDailyReport(date?: string) {
   })
 }
 
+export const operationsHealthSchema = z.object({
+  healthy_integrations: z.number(),
+  total_integrations: z.number(),
+  failed_syncs_24h: z.number(),
+  open_exceptions: z.number(),
+  critical_exceptions: z.number(),
+  inventory_mismatches: z.number(),
+  settlement_mismatches: z.number(),
+  pending_reconciliations: z.number(),
+  critical_alerts: z.number(),
+})
+
+export type OperationsHealth = z.infer<typeof operationsHealthSchema>
+
+export function useOperationsHealth() {
+  return useQuery({
+    queryKey: ['reports', 'operations-health'],
+    queryFn: ({ signal }) =>
+      apiRequest('/reports/operations-health', operationsHealthSchema, { signal }),
+    refetchInterval: 30000,
+  })
+}
+
+

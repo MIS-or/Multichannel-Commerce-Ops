@@ -13,13 +13,10 @@ export function Skeleton({ className = "", style }: SkeletonProps) {
 
 export function MetricCardSkeleton() {
   return (
-    <div className="bg-white border border-border rounded-[10px] p-5 shadow-xs">
-      <div className="flex items-center gap-2 mb-3">
-        <Skeleton className="w-8 h-8 rounded-lg" />
-        <Skeleton className="w-20 h-3.5 rounded" />
-      </div>
-      <Skeleton className="w-32 h-8 rounded mb-1.5" />
-      <Skeleton className="w-16 h-3 rounded" />
+    <div className="bg-white border border-border border-l-4 border-l-gray-200 rounded-xl px-5 py-4 shadow-xs">
+      <Skeleton className="w-24 h-3 rounded mb-3" />
+      <Skeleton className="w-36 h-7 rounded mb-2" />
+      <Skeleton className="w-28 h-2.5 rounded" />
     </div>
   )
 }

@@ -25,6 +25,15 @@ const ReconciliationPage = lazy(() =>
 const ReconciliationDetailPage = lazy(() =>
   import('../pages/ReconciliationDetailPage').then((m) => ({ default: m.ReconciliationDetailPage })),
 )
+const ExceptionsPage = lazy(() =>
+  import('../pages/ExceptionsPage').then((m) => ({ default: m.ExceptionsPage })),
+)
+const IntegrationsPage = lazy(() =>
+  import('../pages/IntegrationsPage').then((m) => ({ default: m.IntegrationsPage })),
+)
+const AutomationPage = lazy(() =>
+  import('../pages/AutomationPage').then((m) => ({ default: m.AutomationPage })),
+)
 
 function PageLoadingFallback() {
   return (
@@ -55,6 +64,9 @@ export function App() {
             <Route path="/alerts" element={<AlertsPage />} />
             <Route path="/reconciliation" element={<ReconciliationPage />} />
             <Route path="/reconciliation/:id" element={<ReconciliationDetailPage />} />
+            <Route path="/exceptions" element={<ExceptionsPage />} />
+            <Route path="/integrations" element={<IntegrationsPage />} />
+            <Route path="/automation" element={<AutomationPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
