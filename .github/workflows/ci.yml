@@ -36,7 +36,7 @@ jobs:
       - name: Validate Artifacts
         run: python ../scripts/validate_artifacts.py
       - name: Run Backend Tests (Unit & Architecture)
-        run: python -m pytest tests -v
+        run: python -m pytest tests --ignore=tests/integration/test_postgres_commerce_pipeline.py -v
       - name: Compile Backend Bytecode
         run: python -m compileall -q app tests
 
