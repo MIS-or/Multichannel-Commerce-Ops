@@ -31,9 +31,7 @@ async def _service(session: AsyncSession) -> ReconciliationService:
     channel_service = ChannelService(ChannelRepository(session))
     product_service = ProductService(ProductRepository(session))
     alert_service = AlertService(session, AlertRepository(session))
-    inventory_service = InventoryService(
-        session, product_service, alert_service=alert_service
-    )
+    inventory_service = InventoryService(session, product_service, alert_service=alert_service)
     ledger_service = LedgerService(LedgerRepository(session))
     order_service = OrderService(
         session=session,

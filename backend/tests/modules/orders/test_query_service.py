@@ -110,4 +110,3 @@ async def test_order_query_filters_by_channel_and_search(session: AsyncSession) 
     searched = await service.list_orders(limit=10, offset=0, search="202")
     assert len(searched) == 1
     assert searched[0].external_order_id == "TT-202"
-

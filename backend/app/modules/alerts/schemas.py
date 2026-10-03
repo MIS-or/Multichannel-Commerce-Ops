@@ -25,4 +25,3 @@ class LowStockAlertRequest(BaseModel):
     name: str = ""
     current_stock: int
     reorder_threshold: int
-

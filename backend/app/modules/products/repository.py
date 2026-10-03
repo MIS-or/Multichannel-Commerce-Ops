@@ -28,4 +28,3 @@ class ProductRepository:
     async def list_all(self) -> list[Product]:
         result = await self._session.execute(select(Product).order_by(Product.sku))
         return list(result.scalars().all())
-

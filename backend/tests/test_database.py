@@ -18,8 +18,7 @@ async def test_async_database_engine_executes_queries() -> None:
 
 def test_neon_pooler_uses_external_pooling_strategy() -> None:
     pooled_url = (
-        "postgresql+asyncpg://user:password@"
-        "ep-example-pooler.ap-southeast-1.aws.neon.tech/mco"
+        "postgresql+asyncpg://user:password@ep-example-pooler.ap-southeast-1.aws.neon.tech/mco"
     )
 
     test_engine = build_async_engine(pooled_url)

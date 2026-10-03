@@ -29,3 +29,25 @@ class ConflictError(AppError):
 class BusinessRuleError(AppError):
     def __init__(self, code: str, message: str, *, details: dict[str, Any] | None = None) -> None:
         super().__init__(code=code, message=message, status_code=422, details=details)
+
+
+class UnauthorizedError(AppError):
+    def __init__(
+        self,
+        message: str = "Authentication required",
+        *,
+        code: str = "UNAUTHORIZED",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(code=code, message=message, status_code=401, details=details)
+
+
+class ForbiddenError(AppError):
+    def __init__(
+        self,
+        message: str = "Permission denied",
+        *,
+        code: str = "FORBIDDEN",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(code=code, message=message, status_code=403, details=details)

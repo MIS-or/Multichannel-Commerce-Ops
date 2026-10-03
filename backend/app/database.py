@@ -16,9 +16,7 @@ from app.config import get_settings
 def _uses_neon_pooler(database_url: str) -> bool:
     url = make_url(database_url)
     return (
-        url.drivername == "postgresql+asyncpg"
-        and url.host is not None
-        and "-pooler." in url.host
+        url.drivername == "postgresql+asyncpg" and url.host is not None and "-pooler." in url.host
     )
 
 
