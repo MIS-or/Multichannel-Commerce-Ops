@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from typing import Any, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -564,7 +565,7 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                         title=title,
                         description=desc,
                         variance_amount=var_amt,
-                        payload_snapshot=snap,
+                        payload_snapshot=cast(dict[str, Any], snap),
                         assigned_to=assignee,
                         root_cause=cause,
                         resolution_notes=notes,
@@ -647,8 +648,8 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                         description=r_desc,
                         trigger_event=r_trig,
                         is_active=True,
-                        conditions=r_conds,
-                        actions=r_actions,
+                        conditions=cast(list[dict[str, Any]], r_conds),
+                        actions=cast(list[dict[str, Any]], r_actions),
                         created_at=now - timedelta(days=2),
                         updated_at=now - timedelta(days=2),
                     )
@@ -924,8 +925,8 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                         action=action,
                         entity_type=entity_type,
                         entity_id=entity_id,
-                        before_state=before_state,
-                        after_state=after_state,
+                        before_state=cast(dict[str, Any] | None, before_state),
+                        after_state=cast(dict[str, Any] | None, after_state),
                         reason=reason,
                         created_at=created_at_time,
                     )
@@ -1012,8 +1013,8 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                     JobRun(
                         job_type=job_type,
                         status=job_status,
-                        payload=payload,
-                        result=result,
+                        payload=cast(dict[str, Any], payload),
+                        result=cast(dict[str, Any] | None, result),
                         error_message=error_message,
                         retry_count=retry_count,
                         max_retries=max_retries,
