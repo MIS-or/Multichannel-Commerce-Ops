@@ -614,9 +614,18 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
             ),
             (
                 "Notify n8n Workflow on High-Value Order",
-                "Trigger n8n webhook workflow whenever an ingested order total exceeds 1,000,000 VND.",
+                (
+                    "Trigger n8n webhook workflow whenever an ingested "
+                    "order total exceeds 1,000,000 VND."
+                ),
                 TriggerEvent.ORDER_INGESTED,
-                [{"field": "total_amount", "operator": "greater_than_or_equal", "value": 1000000}],
+                [
+                    {
+                        "field": "total_amount",
+                        "operator": "greater_than_or_equal",
+                        "value": 1000000,
+                    }
+                ],
                 [
                     {
                         "action_type": ActionType.TRIGGER_WEBHOOK,
@@ -648,12 +657,20 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
         await session.flush()
 
         # Seed Rule Execution Logs
-        rule_1 = await session.scalar(select(Rule).where(Rule.name == "Auto-Triage Critical Inventory Discrepancy"))
-        rule_2 = await session.scalar(select(Rule).where(Rule.name == "Alert Finance on Settlement Discrepancy"))
-        rule_3 = await session.scalar(select(Rule).where(Rule.name == "Notify n8n Workflow on High-Value Order"))
+        rule_1 = await session.scalar(
+            select(Rule).where(Rule.name == "Auto-Triage Critical Inventory Discrepancy")
+        )
+        rule_2 = await session.scalar(
+            select(Rule).where(Rule.name == "Alert Finance on Settlement Discrepancy")
+        )
+        rule_3 = await session.scalar(
+            select(Rule).where(Rule.name == "Notify n8n Workflow on High-Value Order")
+        )
 
         if rule_1 and rule_1.id:
-            existing_log = await session.scalar(select(RuleExecutionLog).where(RuleExecutionLog.rule_id == rule_1.id))
+            existing_log = await session.scalar(
+                select(RuleExecutionLog).where(RuleExecutionLog.rule_id == rule_1.id)
+            )
             if existing_log is None:
                 session.add(
                     RuleExecutionLog(
@@ -661,14 +678,27 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                         trigger_event=TriggerEvent.INVENTORY_VARIANCE_DETECTED,
                         matched=True,
                         status=RuleExecutionStatus.SUCCESS,
-                        payload_snapshot={"sku": "BAG-CNV", "channel_code": "shopee_vn", "variance_amount": 12, "severity": "critical"},
-                        actions_taken=[{"action_type": "create_exception", "status": "executed", "exception_id": 1}],
+                        payload_snapshot={
+                            "sku": "BAG-CNV",
+                            "channel_code": "shopee_vn",
+                            "variance_amount": 12,
+                            "severity": "critical",
+                        },
+                        actions_taken=[
+                            {
+                                "action_type": "create_exception",
+                                "status": "executed",
+                                "exception_id": 1,
+                            }
+                        ],
                         error_message=None,
                         executed_at=now - timedelta(hours=2),
                     )
                 )
         if rule_2 and rule_2.id:
-            existing_log = await session.scalar(select(RuleExecutionLog).where(RuleExecutionLog.rule_id == rule_2.id))
+            existing_log = await session.scalar(
+                select(RuleExecutionLog).where(RuleExecutionLog.rule_id == rule_2.id)
+            )
             if existing_log is None:
                 session.add(
                     RuleExecutionLog(
@@ -676,14 +706,27 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                         trigger_event=TriggerEvent.SETTLEMENT_DISCREPANCY_DETECTED,
                         matched=True,
                         status=RuleExecutionStatus.SUCCESS,
-                        payload_snapshot={"channel_code": "tiktok_shop_vn", "variance_amount": 30000, "expected_payout": 450000, "actual_payout": 420000},
-                        actions_taken=[{"action_type": "create_alert", "status": "executed", "channel": "finance"}],
+                        payload_snapshot={
+                            "channel_code": "tiktok_shop_vn",
+                            "variance_amount": 30000,
+                            "expected_payout": 450000,
+                            "actual_payout": 420000,
+                        },
+                        actions_taken=[
+                            {
+                                "action_type": "create_alert",
+                                "status": "executed",
+                                "channel": "finance",
+                            }
+                        ],
                         error_message=None,
                         executed_at=now - timedelta(hours=1, minutes=30),
                     )
                 )
         if rule_3 and rule_3.id:
-            existing_log = await session.scalar(select(RuleExecutionLog).where(RuleExecutionLog.rule_id == rule_3.id))
+            existing_log = await session.scalar(
+                select(RuleExecutionLog).where(RuleExecutionLog.rule_id == rule_3.id)
+            )
             if existing_log is None:
                 session.add(
                     RuleExecutionLog(
@@ -691,8 +734,18 @@ async def seed_operations(db_session: AsyncSession | None = None) -> None:
                         trigger_event=TriggerEvent.ORDER_INGESTED,
                         matched=True,
                         status=RuleExecutionStatus.SUCCESS,
-                        payload_snapshot={"order_id": "ORD-2026-0904-001", "channel_code": "shopee", "total_amount": 1250000},
-                        actions_taken=[{"action_type": "trigger_webhook", "status": "dispatched", "url": "http://n8n:5678/webhook/high-value-order"}],
+                        payload_snapshot={
+                            "order_id": "ORD-2026-0904-001",
+                            "channel_code": "shopee",
+                            "total_amount": 1250000,
+                        },
+                        actions_taken=[
+                            {
+                                "action_type": "trigger_webhook",
+                                "status": "dispatched",
+                                "url": "http://n8n:5678/webhook/high-value-order",
+                            }
+                        ],
                         error_message=None,
                         executed_at=now - timedelta(minutes=45),
                     )
