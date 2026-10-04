@@ -53,3 +53,81 @@ async def test_daily_report_aggregates_by_channel(session: AsyncSession) -> None
     assert report.totals.cogs == Decimal("480.00")
     assert report.totals.gross_profit == Decimal("320.00")
     assert [channel.channel for channel in report.channels] == ["shopee", "website"]
+
+
+async def test_operations_health_summary(session: AsyncSession) -> None:
+    from app.modules.alerts.models import Alert, AlertSeverity, AlertType
+    from app.modules.exceptions.models import (
+        ExceptionDomain,
+        ExceptionSeverity,
+        ExceptionStatus,
+        OperationalException,
+    )
+    from app.modules.integrations.models import SyncRun, SyncStatus, SyncType
+
+    now = datetime.now(UTC)
+
+    # 1. Add Sync runs (1 success, 1 failed)
+    session.add_all(
+        [
+            SyncRun(
+                channel_code="shopee",
+                sync_type=SyncType.ORDERS,
+                status=SyncStatus.SUCCESS,
+                started_at=now,
+                completed_at=now,
+            ),
+            SyncRun(
+                channel_code="tiktok",
+                sync_type=SyncType.ORDERS,
+                status=SyncStatus.FAILED,
+                started_at=now,
+                completed_at=now,
+            ),
+        ]
+    )
+
+    # 2. Add Exceptions (1 critical open inventory, 1 resolved)
+    session.add_all(
+        [
+            OperationalException(
+                domain=ExceptionDomain.INVENTORY_VARIANCE,
+                severity=ExceptionSeverity.CRITICAL,
+                status=ExceptionStatus.OPEN,
+                reference_id="SKU-100",
+                title="Critical stock variance",
+                description="Channel stock mismatch",
+            ),
+            OperationalException(
+                domain=ExceptionDomain.SETTLEMENT_DISCREPANCY,
+                severity=ExceptionSeverity.MEDIUM,
+                status=ExceptionStatus.RESOLVED,
+                reference_id="ORD-1",
+                title="Settlement resolved",
+                description="Notes",
+            ),
+        ]
+    )
+
+    # 3. Add Alert (1 critical active)
+    session.add(
+        Alert(
+            type=AlertType.LOW_STOCK,
+            severity=AlertSeverity.CRITICAL,
+            dedup_key="crit_alert_1",
+            message="Stock depleted",
+            resolved=False,
+        )
+    )
+    await session.commit()
+
+    service = ReportsService(ReportsRepository(session))
+    summary = await service.operations_health()
+
+    assert summary.total_integrations >= 2
+    assert summary.failed_syncs_24h >= 1
+    assert summary.open_exceptions >= 1
+    assert summary.critical_exceptions >= 1
+    assert summary.inventory_mismatches >= 1
+    assert summary.critical_alerts >= 1
+

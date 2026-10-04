@@ -95,4 +95,3 @@ async def test_record_sale_accepts_pure_contract_without_orm_entities(
     by_type = {entry.entry_type: entry.amount for entry in entries}
     assert by_type[LedgerEntryType.REVENUE] == Decimal("400.00")
     assert by_type[LedgerEntryType.COGS] == Decimal("230.00")
-

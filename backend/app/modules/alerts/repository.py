@@ -23,9 +23,9 @@ class AlertRepository:
         statement = select(Alert)
         if resolved is not None:
             statement = statement.where(col(Alert.resolved).is_(resolved))
-        statement = statement.order_by(
-            col(Alert.created_at).desc(), col(Alert.id).desc()
-        ).limit(limit)
+        statement = statement.order_by(col(Alert.created_at).desc(), col(Alert.id).desc()).limit(
+            limit
+        )
         result = await self._session.execute(statement)
         return list(result.scalars().all())
 

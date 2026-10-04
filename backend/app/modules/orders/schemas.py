@@ -10,7 +10,7 @@ from app.modules.orders.models import OrderStatus
 class OrderImportItem(BaseModel):
     sku: str = Field(min_length=1, max_length=64)
     quantity: int = Field(gt=0)
-    unit_price: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    unit_price: Decimal = Field(ge=Decimal("0"), max_digits=14, decimal_places=2)
 
 
 class OrderImportRequest(BaseModel):
@@ -18,7 +18,7 @@ class OrderImportRequest(BaseModel):
     external_order_id: str = Field(min_length=1, max_length=100)
     order_date: datetime
     status: OrderStatus = OrderStatus.PAID
-    total_amount: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    total_amount: Decimal = Field(ge=Decimal("0"), max_digits=14, decimal_places=2)
     source_updated_at: datetime | None = None
     items: list[OrderImportItem] = Field(min_length=1, max_length=100)
 
@@ -33,9 +33,7 @@ class OrderImportRequest(BaseModel):
             start=Decimal("0.00"),
         )
         if calculated_total != self.total_amount:
-            raise ValueError(
-                f"total_amount must equal the sum of item lines ({calculated_total})"
-            )
+            raise ValueError(f"total_amount must equal the sum of item lines ({calculated_total})")
         return self
 
 
@@ -59,7 +57,6 @@ class OrderItemRead(BaseModel):
     unit_cost: Decimal
     sku: str | None = None
     product_name: str | None = None
-
 
 
 class OrderRead(BaseModel):

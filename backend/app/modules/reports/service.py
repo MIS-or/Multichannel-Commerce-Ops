@@ -2,7 +2,12 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 
 from app.modules.reports.repository import ReportsRepository
-from app.modules.reports.schemas import ChannelPerformance, DailyReport, DailyTotals
+from app.modules.reports.schemas import (
+    ChannelPerformance,
+    DailyReport,
+    DailyTotals,
+    OperationsHealthSummary,
+)
 
 
 class ReportsService:
@@ -30,9 +35,7 @@ class ReportsService:
             for code, name, orders, revenue, cogs in rows
         ]
         total_orders = sum(channel.orders for channel in channels)
-        total_revenue = sum(
-            (channel.revenue for channel in channels), start=Decimal("0.00")
-        )
+        total_revenue = sum((channel.revenue for channel in channels), start=Decimal("0.00"))
         total_cogs = sum((channel.cogs for channel in channels), start=Decimal("0.00"))
         return DailyReport(
             date=target_date,
@@ -45,3 +48,5 @@ class ReportsService:
             channels=channels,
         )
 
+    async def operations_health(self) -> OperationsHealthSummary:
+        return await self._repository.operations_health()

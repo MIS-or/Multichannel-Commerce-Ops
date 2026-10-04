@@ -77,3 +77,15 @@ input {
 .table-row-hover {
   transition: background-color 0.1s ease;
 }
+
+/* Slide-over panel — used by RuleDetailPanel */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

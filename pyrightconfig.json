@@ -1,6 +1,10 @@
 {
   "venvPath": "backend",
   "venv": ".venv",
+  "extraPaths": [
+    "backend",
+    "backend/.venv/Lib/site-packages"
+  ],
   "include": ["backend/app"],
   "reportAssignmentType": "none",
   "reportIncompatibleVariableOverride": "none"

@@ -13,6 +13,9 @@ export type Page =
   | "alerts"
   | "reconciliation"
   | "reconciliation-detail"
+  | "exceptions"
+  | "integrations"
+  | "automation"
 
 export interface ToastItem {
   id: number
@@ -26,3 +29,23 @@ export type { DailyReport } from "./features/dashboard/api"
 export type { InventoryItem } from "./features/inventory/api"
 export type { Alert } from "./features/alerts/api"
 export type { Reconciliation, ReconciliationMismatch, RunReconciliationPayload } from "./features/reconciliation/api"
+export type {
+  OperationalException,
+  ExceptionDomain,
+  ExceptionSeverity,
+  ExceptionStatus,
+  RootCauseCategory,
+} from "./features/exceptions/api"
+export type {
+  ConnectorHealthStatus,
+  IntegrationHealthResponse,
+  SyncRun,
+  SyncType,
+  SyncStatus,
+} from "./features/integrations/api"
+export type {
+  Rule,
+  RuleExecutionLog,
+  TriggerEvent,
+  ActionType,
+} from "./features/automation/api"

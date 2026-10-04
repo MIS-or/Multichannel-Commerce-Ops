@@ -41,10 +41,7 @@ class OrderRepository:
         status: OrderStatus | None = None,
         search: str | None = None,
     ) -> list[tuple[Order, str]]:
-        stmt = (
-            select(Order, Channel.code)
-            .join(Channel, col(Channel.id) == col(Order.channel_id))
-        )
+        stmt = select(Order, Channel.code).join(Channel, col(Channel.id) == col(Order.channel_id))
         if channel is not None:
             stmt = stmt.where(col(Channel.code) == channel)
         if status is not None:
@@ -60,7 +57,6 @@ class OrderRepository:
         result = await self._session.execute(stmt)
 
         return [(order, str(channel_code)) for order, channel_code in result.all()]
-
 
     async def get_with_channel(self, order_id: int) -> tuple[Order, str] | None:
         result = await self._session.execute(

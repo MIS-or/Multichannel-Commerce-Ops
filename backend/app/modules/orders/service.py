@@ -91,12 +91,10 @@ class OrderService:
                 )
             )
 
-
         return OrderDetail(
             **self._to_read(order, channel).model_dump(),
             items=item_reads,
         )
-
 
     async def get_orders_for_reconciliation(
         self,

@@ -1,6 +1,8 @@
 # Multichannel Commerce Operations (MCO)
 
-MCO is an enterprise-grade internal operations platform for multichannel commerce. It demonstrates resilient order synchronization, atomic stock consumption, revenue/COGS double-entry accounting, operational alerts, channel financial reconciliation, workflow automation, and an action-oriented operational dashboard.
+> **Multichannel Commerce Integration, Reconciliation & Automation Platform**
+
+MCO is an enterprise-grade internal operations platform for multichannel commerce. It connects external business systems (ERPs, Marketplaces, WMS, Payment Gateways), normalizes and validates operational data, performs automated multi-dimensional reconciliation (settlements and inventory), detects operational exceptions, and automates supervised workflows.
 
 The project is architected as a **hardened Modular Monolith**: FastAPI owns domain business rules, public module facades, and ACID transactions; PostgreSQL provides durable ACID isolation; n8n manages schedules and transport orchestration; and React provides a typed, component-driven dashboard.
 

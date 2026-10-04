@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ArrowRight, ListChecks, Play, RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -7,6 +7,7 @@ import { Button } from '../components/Button'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
+import { MetricCard } from '../components/MetricCard'
 import { PageHeader } from '../components/PageHeader'
 import { TableRowSkeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
@@ -24,6 +25,17 @@ export function ReconciliationPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedChannel, setSelectedChannel] = useState<string>('Shopee')
+
+  // Computed reconciliation KPI summary metrics
+  const summaryMetrics = useMemo(() => {
+    if (!reconciliations) return { total: 0, successful: 0, totalChecked: 0, totalMismatches: 0 }
+    return {
+      total: reconciliations.length,
+      successful: reconciliations.filter((r) => r.status === 'success').length,
+      totalChecked: reconciliations.reduce((acc, r) => acc + (r.records_checked || 0), 0),
+      totalMismatches: reconciliations.reduce((acc, r) => acc + (r.mismatches_found || 0), 0),
+    }
+  }, [reconciliations])
 
   const handleRunReconciliation = async () => {
     try {
@@ -99,6 +111,41 @@ export function ReconciliationPage() {
             Run Reconciliation
           </Button>
         </div>
+      </div>
+
+      {/* Reconciliation KPI Overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <MetricCard
+          label="Tổng phiên đối soát"
+          value={isLoading ? '...' : summaryMetrics.total}
+          description="Lịch sử đối soát đơn hàng và payout dòng tiền"
+          accent="info"
+        />
+        <MetricCard
+          label="Khớp hoàn toàn"
+          value={isLoading ? '...' : summaryMetrics.successful}
+          valueClassName="text-emerald-600 font-bold font-mono"
+          description="Phiên đối soát không phát hiện sai lệch số liệu"
+          accent="success"
+        />
+        <MetricCard
+          label="Lệch phát hiện"
+          value={isLoading ? '...' : summaryMetrics.totalMismatches}
+          valueClassName={
+            summaryMetrics.totalMismatches > 0
+              ? 'text-red-600 font-bold font-mono'
+              : 'text-gray-900 font-bold font-mono'
+          }
+          description="Số đơn hoặc giao dịch có sai lệch cần tạo ngoại lệ"
+          accent={summaryMetrics.totalMismatches > 0 ? 'danger' : 'default'}
+        />
+        <MetricCard
+          label="Đơn đã kiểm tra"
+          value={isLoading ? '...' : summaryMetrics.totalChecked.toLocaleString()}
+          valueClassName="font-bold font-mono"
+          description="Tổng số bản ghi giao dịch đã được quét đối soát"
+          accent="default"
+        />
       </div>
 
       <div className="bg-white border border-border rounded-[10px] overflow-hidden shadow-xs">

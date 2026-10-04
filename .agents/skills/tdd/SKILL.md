@@ -1,38 +1,65 @@
 ---
 name: tdd
-description: Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
+description: |
+    Strict Test-Driven Development (TDD) discipline.
+    Enforces the Red-Green-Refactor cycle: write failing tests first, implement minimal code
+    to pass, and refactor for clean architecture with full test verification.
+
+    Relevant when:
+      - Writing business logic, utility functions, API routes, or state management.
+      - Enforcing regression safety and bulletproof code quality.
+      - Fixing bugs (write a failing test reproducing the bug first).
 ---
 
-# Test-Driven Development
+# Strict Test-Driven Development (TDD)
 
-TDD is the red → green loop. This skill is the reference that makes that loop produce tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. Every section applies on every cycle: consult them before and during the loop, not after.
+TDD is a non-negotiable engineering discipline. Code written without failing tests first carries high risk of regression, hidden bugs, and design flaws.
 
-When exploring the codebase, read `CONTEXT.md` (if it exists) so test names and interface vocabulary match the project's domain language, and respect ADRs in the area you're touching.
+---
 
-## What a good test is
+## The Red-Green-Refactor Cycle
 
-Tests verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't. A good test reads like a specification: "user can checkout with valid cart" tells you exactly what capability exists, and it survives refactors because it doesn't care about internal structure.
+```mermaid
+flowchart LR
+    R["🔴 RED<br/>Write Failing Test"] --> G["🟢 GREEN<br/>Minimal Code to Pass"]
+    G --> B["🔵 REFACTOR<br/>Clean Up Design"]
+    B --> R
+```
 
-See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
+---
 
-## Seams: where tests go
+## Step 1: Red (Write the Failing Test)
 
-A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
+1. Write a focused test specifying observable behavior.
+2. Execute the test runner (e.g., `npm test` or `npx vitest run`).
+3. **Verify the failure**:
+    - The test MUST fail.
+    - The failure reason MUST match what you expect (e.g., "function undefined" or "received 0, expected 42").
+    - If the test passes immediately, your test is invalid or redundant.
 
-**Test only at pre-agreed seams.** Before writing any test, write down the seams under test and confirm them with the user. No test is written at an unconfirmed seam. You can't test everything, so agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
+---
 
-Ask: "What's the public interface, and which seams should we test?"
+## Step 2: Green (Write Minimal Code)
 
-When the shape of that interface is itself in question (how deep the module is, where the seam belongs, what the interface should expose), call the Skill tool with "codebase-design" for the vocabulary. It is the shared source of the module, interface, depth, seam, adapter, leverage and locality terms, and it is a reference to consult, not a session to run.
+1. Write the simplest possible implementation that satisfies the test.
+2. Do not write anticipatory code or extra features not covered by tests.
+3. Run the test suite: **all tests must pass**.
 
-## Anti-patterns
+---
 
-- **Implementation-coupled**: mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.
-- **Tautological**: the assertion recomputes the expected value the way the code does (`expect(add(a, b)).toBe(a + b)`, a snapshot derived by hand the same way, a constant asserted equal to itself), so it passes by construction and can never disagree with the code. Expected values must come from an independent source of truth: a known-good literal, a worked example, the spec.
-- **Horizontal slicing**: writing all tests first, then all implementation. Bulk tests verify _imagined_ behavior: you test the _shape_ of things rather than user-facing behavior, the tests go insensitive to real changes, and you commit to test structure before understanding the implementation. Work in **vertical slices** instead: one test → one implementation → repeat, each test a **tracer bullet** that responds to what the last cycle taught you.
+## Step 3: Refactor (Polish Design)
 
-## Rules of the loop
+1. Improve naming, extract helper methods, remove duplication.
+2. Tighten TypeScript types (discriminated unions, immutable data structures).
+3. Re-run tests after every minor refactor to ensure no regressions.
 
-- **Red before green.** Write the failing test first, then only enough code to pass it. Don't anticipate future tests or add speculative features.
-- **One slice at a time.** One seam, one test, one minimal implementation per cycle.
-- **Refactoring is not part of the loop.** It belongs to the review stage (see the `code-review` skill), not the red → green implementation cycle.
+---
+
+## Edge Case Matrix Checklist
+
+Every feature test file should cover:
+
+- [ ] **Standard Success Path**: Expected inputs produce expected outputs.
+- [ ] **Empty / Zero Inputs**: `[]`, `""`, `0`, `null`, `undefined`.
+- [ ] **Boundary Conditions**: Maximum array size, negative numbers, long strings.
+- [ ] **Error & Exception Paths**: Network drop, timeout, invalid schema validation.

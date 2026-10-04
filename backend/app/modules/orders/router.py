@@ -67,7 +67,6 @@ async def list_orders(
     )
 
 
-
 @router.get("/{order_id}", response_model=OrderDetail)
 async def get_order(
     order_id: int,

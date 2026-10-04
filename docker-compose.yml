@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-mco}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - mco_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -34,7 +34,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: ["python", "-m", "app.scripts.seed_demo"]
+    command: ["python", "-m", "app.scripts.seed_operations"]
     env_file:
       - path: .env
         required: false
@@ -73,6 +73,9 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: "/api/v1"
+        VITE_DEMO_REPORT_DATE: "2026-09-01"
     ports:
       - "5173:80"
     depends_on:
@@ -87,6 +90,9 @@ services:
     environment:
       N8N_EXPRESSION_ENGINE: vm
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-dcfb03d851d22ec14a67d3f04b31db76119242d6e565645a06fba61114272a63}
+      N8N_PATH: /n8n/
+      N8N_EDITOR_BASE_URL: http://localhost:5173/n8n/
+      WEBHOOK_URL: http://localhost:5173/n8n/
       MCO_API_BASE_URL: http://backend:8000
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}

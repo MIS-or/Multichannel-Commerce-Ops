@@ -35,4 +35,3 @@ class ProductService:
 
 def get_product_service(session: AsyncSession = Depends(get_session)) -> ProductService:
     return ProductService(ProductRepository(session))
-

@@ -30,4 +30,4 @@ def test_module_facades_define_explicit_all_and_hide_repositories() -> None:
             )
         checked_modules += 1
 
-    assert checked_modules == 9, f"Expected 9 modules, but checked {checked_modules}"
+    assert checked_modules == 15, f"Expected 15 modules, but checked {checked_modules}"
